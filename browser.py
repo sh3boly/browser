@@ -10,10 +10,15 @@ def show(body):
         elif not in_tag:
             print(c, end="")
 
-def load(url):
-    body = url.request()
+def load(url, httpVersion = "1.1", browser = "Chrome"):
+    body = url.request(httpVersion, browser)
     show(body)    
 
 if __name__ == "__main__":
     import sys
-    load(URL(sys.argv[1]))
+    if len(sys.argv) < 2:
+        load(URL())
+    elif len(sys.argv) == 2:
+        load(URL(sys.argv[1]))
+    else:
+        load(URL(sys.argv[1]), sys.argv[2], sys.argv[3])
