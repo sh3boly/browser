@@ -1,18 +1,32 @@
 from URL import URL
+# I'll use this to keep different hosts open incase of keep-connection alive
+servers = {}
 
-def show(body):
+def show(body, view_source):
     in_tag = False
-    for c in body:
-        if c == "<":
+    i = 0
+    if view_source:
+        print(body)
+        return
+    while i < len(body):
+        c = body[i]
+        if body[i:i+4] == "&lt;":
+            print("<", end="")
+            i += 3
+        elif body[i:i+4] == "&gt;":
+            print(">", end="")
+            i += 3
+        elif c == "<":
             in_tag = True
         elif c == ">":
             in_tag = False
         elif not in_tag:
             print(c, end="")
+        i += 1
 
 def load(url, httpVersion = "1.1", browser = "Chrome"):
-    body = url.request(httpVersion, browser)
-    show(body)    
+    body, view_source = url.request(httpVersion, browser)
+    show(body, view_source)    
 
 if __name__ == "__main__":
     import sys
