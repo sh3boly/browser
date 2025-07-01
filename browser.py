@@ -1,7 +1,4 @@
 from URL import URL
-# I'll use this to keep different hosts open incase of keep-connection alive
-servers = {}
-
 def show(body, view_source):
     in_tag = False
     i = 0

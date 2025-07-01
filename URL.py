@@ -1,8 +1,8 @@
 import socket
 import ssl
-
 class URL:
     def __init__(self, url = ""):
+        self.count_redirects = 0
         self.view_source = False
         if url == "":
             self.scheme = "file"
@@ -46,6 +46,7 @@ class URL:
             type=socket.SOCK_STREAM,
             proto=socket.IPPROTO_TCP
         )
+
         s.connect((self.host, self.port))
         
         if self.scheme == "https":
@@ -59,7 +60,7 @@ class URL:
         elif httpVersion == "1.1":
             request = "GET {} HTTP/1.1\r\n".format(self.path)
             request += "Host: {}\r\n".format(self.host)
-            request += "Connection: close\r\n"
+            request += "Connection: keep-alive\r\n"
             request += "User-Agent: {}\r\n".format(browser)
         request += "\r\n"
 
@@ -73,12 +74,24 @@ class URL:
             if line == "\r\n": break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
-        
-        content_length = response_headers.get("content-length")
-        
+        print(response_headers)
+        if "location" in response_headers:
+            print("Test")
+            location: str = response_headers.get("location")
+            if(location.count(self.host) < 0):
+                location += self.host
+            if(location.count(self.scheme) < 0):
+                location += self.scheme
+            self.url = location
+            if self.count_redirects > 10:
+                return "", self.view_source
+            self.count_redirects += 1
+            print(location)
+            return self.request(httpVersion, browser)
+                
+
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
         content = response.read()
-        s.close()
         return content, self.view_source
 
