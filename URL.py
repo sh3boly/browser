@@ -1,5 +1,6 @@
 import socket
 import ssl
+import gzip
 from BrowserCache import BrowserCache
 class URL:
     def __init__(self, url = ""):
@@ -37,8 +38,10 @@ class URL:
         if ":" in self.host:
             self.host, port = self.host.split(":", 1)
             self.port = int(port)
+
     def request(self, httpVersion = "", browser = ""):
         return self.cache.memoize(self.request_helper, httpVersion, browser, self.fullUrl)
+    
     def request_helper(self, httpVersion = "", browser = "", fullUrl = ""):
         match self.scheme:
             case "data":
@@ -62,24 +65,29 @@ class URL:
         if httpVersion == "1.0":
             request = "GET {} HTTP/1.0\r\n".format(self.path)
             request += "Host: {}\r\n".format(self.host)
+            request += "Accept-Encoding: {}\r\n".format("gzip")
         elif httpVersion == "1.1":
             request = "GET {} HTTP/1.1\r\n".format(self.path)
             request += "Host: {}\r\n".format(self.host)
             request += "Connection: close\r\n"
             request += "User-Agent: {}\r\n".format(browser)
-        request += "\r\n"
+            request += "Accept-Encoding: {}\r\n".format("gzip")
 
+        request += "\r\n"
         s.send(request.encode("utf8"))
-        response = s.makefile("r", encoding="utf8", newline="\r\n")
+        response = s.makefile("rb", newline="\r\n")
         statusline = response.readline()
+        statusline = statusline.decode("utf-8")
         version, status, explanation = statusline.split(" ", 2)
         response_headers = {}
+        
         while True:
             line = response.readline()
+            line = line.decode('utf-8')
             if line == "\r\n": break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
-        print(response_headers)
+
         if int(status) >= 300 and int(status) < 400 and "location" in response_headers:
             location: str = response_headers.get("location")
             if(location.count(self.host) < 0):
@@ -91,11 +99,12 @@ class URL:
                 return "", self.view_source
             self.count_redirects += 1
             return self.request(httpVersion, browser)
-                
-
+        
         assert "transfer-encoding" not in response_headers
-        assert "content-encoding" not in response_headers
-        content = response.read()
+        if "content-encoding" in response_headers:
+            content = response.read()
+            content = gzip.decompress(content)
+            content = content.decode('utf-8')
         if "cache-control" in response_headers:
             self.cache_control = response_headers["cache-control"]
         return content, self.view_source, self.cache_control
