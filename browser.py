@@ -1,4 +1,5 @@
 from URL import URL
+import time
 def show(body, view_source):
     in_tag = False
     i = 0
@@ -28,13 +29,23 @@ def load(url, httpVersion = "1.1", browser = "Chrome"):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
+        start_time = time.time()
         load(URL())
+        first_time = time.time()
         load(URL())
+        cached_time = time.time()
 
     elif len(sys.argv) == 2:
+        start_time = time.time()
         load(URL(sys.argv[1]))
+        first_time = time.time()
         load(URL(sys.argv[1]))
+        cached_time = time.time()
+
 
     else:
         load(URL(sys.argv[1]), sys.argv[2], sys.argv[3])
         load(URL(sys.argv[1]))
+        
+    print("Normal time: ", first_time - start_time)
+    print("Cached time: ", cached_time - first_time)
