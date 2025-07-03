@@ -22,14 +22,19 @@ def show(body, view_source):
         i += 1
 
 def load(url, httpVersion = "1.1", browser = "Chrome"):
-    body, view_source = url.request(httpVersion, browser)
+    body, view_source, _ = url.request(httpVersion, browser)
     show(body, view_source)    
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
         load(URL())
+        load(URL())
+
     elif len(sys.argv) == 2:
         load(URL(sys.argv[1]))
+        load(URL(sys.argv[1]))
+
     else:
         load(URL(sys.argv[1]), sys.argv[2], sys.argv[3])
+        load(URL(sys.argv[1]))
