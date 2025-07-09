@@ -100,9 +100,11 @@ class URL:
             self.count_redirects += 1
             return self.request(httpVersion, browser)
         
-        assert "transfer-encoding" not in response_headers
+        # assert "transfer-encoding" not in response_headers
+        print(response_headers)
         if "content-encoding" in response_headers:
             content = response.read()
+            print(content)
             content = gzip.decompress(content)
             content = content.decode('utf-8')
         if "cache-control" in response_headers:
