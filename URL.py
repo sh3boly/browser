@@ -1,6 +1,7 @@
 import socket
 import ssl
 import gzip
+import io
 from BrowserCache import BrowserCache
 class URL:
     def __init__(self, url = ""):
@@ -38,7 +39,19 @@ class URL:
         if ":" in self.host:
             self.host, port = self.host.split(":", 1)
             self.port = int(port)
+    def parse_and_decompress_chunked_gzip(self, data: bytes) -> bytes:
+        # Step 1: Find chunk size
+        header_end = data.find(b'\r\n')
+        chunk_size_hex = data[:header_end]
+        chunk_size = int(chunk_size_hex, 16)
 
+        # Step 2: Extract the chunk
+        chunk_data_start = header_end + 2
+        chunk_data = data[chunk_data_start:chunk_data_start + chunk_size]
+
+        # Step 3: Decompress GZIP
+        with gzip.GzipFile(fileobj=io.BytesIO(chunk_data)) as gz:
+            return gz.read()
     def request(self, httpVersion = "", browser = ""):
         return self.cache.memoize(self.request_helper, httpVersion, browser, self.fullUrl)
     
@@ -103,10 +116,14 @@ class URL:
         # assert "transfer-encoding" not in response_headers
         print(response_headers)
         if "content-encoding" in response_headers:
-            content = response.read()
-            print(content)
-            content = gzip.decompress(content)
-            content = content.decode('utf-8')
+            if "transfer-encoding" in response_headers:
+                if response_headers["transfer-encoding"] == "chunked":
+                    content = self.parse_and_decompress_chunked_gzip(response.read())
+                    content = content.decode('utf-8')
+            else:
+                content = response.read()
+                content = gzip.decompress(content)
+                content = content.decode('utf-8')
         if "cache-control" in response_headers:
             self.cache_control = response_headers["cache-control"]
         return content, self.view_source, self.cache_control
