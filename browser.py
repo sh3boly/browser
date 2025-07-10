@@ -18,6 +18,19 @@ class Browser:
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
+        self.window.bind("<MouseWheel>", self.mousewheel)
+        self.window.bind("<Button-4>", self.mousewheel)
+        self.window.bind("<Button-5>", self.mousewheel)
+    def mousewheel(self, e):
+        if e.delta >= 120 or e.num == 4:
+            self.scroll -= SCROLLSTEP
+            if self.scroll < 0:
+                self.scroll = 0
+            self.draw()
+        if e.delta <= -120 or e.num == 5:
+            self.scroll += SCROLLSTEP
+            self.draw()
+
 
     def scrolldown(self, e):
         self.scroll += SCROLLSTEP
