@@ -3,6 +3,7 @@ import time
 import tkinter
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
+LINEBREAK = 26
 SCROLLSTEP = 100
 
 class Browser:
@@ -16,9 +17,15 @@ class Browser:
         self.canvas.pack()
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<Up>", self.scrollup)
 
     def scrolldown(self, e):
         self.scroll += SCROLLSTEP
+        self.draw()
+    def scrollup(self, e):
+        self.scroll -= SCROLLSTEP
+        if self.scroll < 0:
+            self.scroll = 0
         self.draw()
     def draw(self):
         self.canvas.delete("all")
@@ -38,6 +45,10 @@ def layout(text):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
     for c in text:
+        if c == "\n":
+            cursor_x = HSTEP
+            cursor_y += LINEBREAK
+            continue
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
         if cursor_x >= WIDTH - HSTEP:
