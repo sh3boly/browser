@@ -14,13 +14,22 @@ class Browser:
             width=WIDTH,
             height=HEIGHT
         )
-        self.canvas.pack()
+        self.canvas.pack(fill='both', expand=1)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<MouseWheel>", self.mousewheel)
         self.window.bind("<Button-4>", self.mousewheel)
         self.window.bind("<Button-5>", self.mousewheel)
+        self.window.bind("<Configure>", self.resize)
+    
+    def resize(self, e):
+        global HEIGHT, WIDTH
+        HEIGHT = e.height
+        WIDTH = e.width
+        self.display_list = layout(self.text)
+        self.draw()
+
     def mousewheel(self, e):
         if e.delta >= 120 or e.num == 4:
             self.scroll -= SCROLLSTEP
@@ -50,6 +59,7 @@ class Browser:
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
         text = lex(body, view_source)
+        self.text = text
         self.display_list = layout(text)
         self.draw()
             
