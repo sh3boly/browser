@@ -33,17 +33,22 @@ class Browser:
         self.draw()
 
     def mousewheel(self, e):
+
         if e.delta >= 120 or e.num == 4:
             self.scroll -= SCROLLSTEP
             if self.scroll < 0:
                 self.scroll = 0
             self.draw()
         if e.delta <= -120 or e.num == 5:
+            if self.scroll + SCROLLSTEP >= self.max_scroll:
+                return
             self.scroll += SCROLLSTEP
             self.draw()
 
 
     def scrolldown(self, e):
+        if self.scroll + SCROLLSTEP >= self.max_scroll:
+            return
         self.scroll += SCROLLSTEP
         self.draw()
     def scrollup(self, e):
@@ -63,7 +68,7 @@ class Browser:
                 continue
             if y + VSTEP < self.scroll: continue
             self.canvas.create_text(x, y - self.scroll, text = c)
-        
+        self.max_scroll = y_end + 50
         self.scrollbar.update(y_end = y_end, y_screen_end = y_screen_end, screen_height= HEIGHT, screen_width= WIDTH, canvas = self.canvas)
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
