@@ -1,4 +1,5 @@
 from URL import URL
+from scrollbar import ScrollBar
 import time
 import tkinter
 WIDTH, HEIGHT = 800, 600
@@ -15,6 +16,7 @@ class Browser:
             height=HEIGHT
         )
         self.canvas.pack(fill='both', expand=1)
+        self.scrollbar = ScrollBar(WIDTH, HEIGHT, self.canvas)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
@@ -49,13 +51,20 @@ class Browser:
         if self.scroll < 0:
             self.scroll = 0
         self.draw()
+
     def draw(self):
         self.canvas.delete("all")
+        y_screen_end = float('inf')
+        y_end = float('-inf')
         for x, y, c in self.display_list:
-            if y > self.scroll + HEIGHT: continue
+            if y > self.scroll + HEIGHT: 
+                y_end = max(y_end, y)
+                y_screen_end = min(y_screen_end, y)
+                continue
             if y + VSTEP < self.scroll: continue
             self.canvas.create_text(x, y - self.scroll, text = c)
-
+        
+        self.scrollbar.update(y_end = y_end, y_screen_end = y_screen_end, screen_height= HEIGHT, screen_width= WIDTH, canvas = self.canvas)
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
         text = lex(body, view_source)
@@ -74,7 +83,7 @@ def layout(text):
             continue
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
-        if cursor_x >= WIDTH - HSTEP:
+        if cursor_x >= WIDTH - HSTEP - 20:
             cursor_y += VSTEP
             cursor_x = HSTEP
     return display_list
