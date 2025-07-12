@@ -1,10 +1,12 @@
 from URL import URL
+from Text import Text
+from Tag import Tag
 from scrollbar import ScrollBar
+from Layout import Layout
 import time
 import tkinter
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
-LINEBREAK = 26
 SCROLLSTEP = 100
 
 class Browser:
@@ -29,7 +31,7 @@ class Browser:
         global HEIGHT, WIDTH
         HEIGHT = e.height
         WIDTH = e.width
-        self.display_list = layout(self.text)
+        self.display_list = Layout(self.tokens, WIDTH).display_list
         self.draw()
 
     def mousewheel(self, e):
@@ -61,60 +63,54 @@ class Browser:
         self.canvas.delete("all")
         y_screen_end = float('inf')
         y_end = float('-inf')
-        for x, y, c in self.display_list:
+        for x, y, c, f in self.display_list:
             if y > self.scroll + HEIGHT: 
                 y_end = max(y_end, y)
                 y_screen_end = min(y_screen_end, y)
                 continue
             if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y - self.scroll, text = c)
+            self.canvas.create_text(x, y - self.scroll, text = c, font=f)
         self.max_scroll = y_end + 50
         self.scrollbar.update(y_end = y_end, y_screen_end = y_screen_end, screen_height= HEIGHT, screen_width= WIDTH, canvas = self.canvas)
+
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
-        text = lex(body, view_source)
-        self.text = text
-        self.display_list = layout(text)
+        tokens = lex(body, view_source)
+        self.tokens = tokens
+        self.display_list = Layout(tokens, WIDTH).display_list
         self.draw()
             
-        
-def layout(text):
-    display_list = []
-    cursor_x, cursor_y = HSTEP, VSTEP
-    for c in text:
-        if c == "\n":
-            cursor_x = HSTEP
-            cursor_y += LINEBREAK
-            continue
-        display_list.append((cursor_x, cursor_y, c))
-        cursor_x += HSTEP
-        if cursor_x >= WIDTH - HSTEP - 20:
-            cursor_y += VSTEP
-            cursor_x = HSTEP
-    return display_list
+
 def lex(body, view_source):
+    out = []
+    buffer = ""
     in_tag = False
     i = 0
-    text = ""
     if view_source:
         text = body
         return text
     while i < len(body):
         c = body[i]
         if body[i:i+4] == "&lt;":
-            text += "<"
+            buffer += "<"
             i += 3
         elif body[i:i+4] == "&gt;":
-            text += ">"
+            buffer += ">"
             i += 3
         elif c == "<":
             in_tag = True
+            if buffer: out.append(Text(buffer))
+            buffer = ""
         elif c == ">":
             in_tag = False
+            out.append(Tag(buffer))
+            buffer = ""
         elif not in_tag:
-            text += c
+            buffer += c
         i += 1
-    return text
+        if not in_tag and buffer:
+            out.append(Text(buffer))
+    return out
 
 
 

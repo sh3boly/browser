@@ -20,7 +20,7 @@ class URL:
             self.view_source = True
             self.scheme, url = url.split(":", 1)
         url = url.removeprefix("//")
-        assert self.scheme in ["http", "https", "file", "data"]
+        assert self.scheme in ["http", "https", "file", "data", "about"]
         match self.scheme:
             case "data":
                 _, self.content = url.split(",", 1)
@@ -32,6 +32,9 @@ class URL:
                 self.port = 80
             case "https":
                 self.port = 443
+            case "about":
+                self.content = ""
+                return
         if "/" not in url:
             url = url + "/"
         self.host, url = url.split("/", 1)
@@ -62,6 +65,8 @@ class URL:
             case "file":
                 f = open(self.path)
                 return f.read(), self.view_source, ""
+            case "about":
+                return self.content, self.view_source, ""
         s = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM,
@@ -93,7 +98,8 @@ class URL:
         statusline = statusline.decode("utf-8")
         version, status, explanation = statusline.split(" ", 2)
         response_headers = {}
-        
+        if int(status) >= 400:
+            return "", self.view_source, ""
         while True:
             line = response.readline()
             line = line.decode('utf-8')
