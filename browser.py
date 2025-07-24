@@ -32,7 +32,6 @@ class Browser:
         HEIGHT = e.height
         WIDTH = e.width
         self.display_list = Layout(self.tokens, WIDTH).display_list
-        print(self.display_list)
         self.draw()
 
     def mousewheel(self, e):
@@ -70,7 +69,6 @@ class Browser:
                 y_screen_end = min(y_screen_end, y)
                 continue
             if y + VSTEP < self.scroll: continue
-            print("Current text info", x, y, c, f)
             self.canvas.create_text(x, y - self.scroll, text = c, font=f, anchor="nw")
         self.max_scroll = y_end + 50
         self.scrollbar.update(y_end = y_end, y_screen_end = y_screen_end, screen_height= HEIGHT, screen_width= WIDTH, canvas = self.canvas)
