@@ -1,10 +1,11 @@
 from URL import URL
 from Text import Text
-from Tag import Tag
+from Element import Element
 from scrollbar import ScrollBar
 from Layout import Layout
 import time
 import tkinter
+from HTMLParser import HTMLParser
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
 SCROLLSTEP = 100
@@ -75,68 +76,24 @@ class Browser:
 
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
-        tokens = lex(body, view_source)
-        self.tokens = tokens
-        self.display_list = Layout(tokens, WIDTH).display_list
+        
+        self.nodes = HTMLParser(body, view_source).parse()
+        self.display_list = Layout(self.nodes, WIDTH).display_list
         self.draw()
             
 
-def lex(body, view_source):
-    out = []
-    buffer = ""
-    in_tag = False
-    i = 0
-    if view_source:
-        text = body
-        return text
-    while i < len(body):
-        c = body[i]
-        if body[i:i+4] == "&lt;":
-            buffer += "<"
-            i += 3
-        elif body[i:i+4] == "&gt;":
-            buffer += ">"
-            i += 3
-        elif c == "<":
-            in_tag = True
-            if buffer: out.append(Text(buffer))
-            buffer = ""
-        elif c == ">":
-            in_tag = False
-            out.append(Tag(buffer))
-            buffer = ""
-        else:
-            buffer += c
-        i += 1
-    if not in_tag and buffer:
-        out.append(Text(buffer))
-    return out
-
-
+def print_tree(node, indent = 0):
+        print(" " * indent, node)
+        for child in node.children:
+            print_tree(child, indent + 2)
 
 if __name__ == "__main__":
     import sys
-    Browser().load(URL(sys.argv[1]))
+    browser = Browser()
+    if len(sys.argv) < 2:
+        browser.load(url = URL())
+    elif len(sys.argv) == 2:
+        browser.load(url = URL(sys.argv[1]))
+    else:
+        browser.load(url = URL(sys.argv[1]), httpVersion= sys.argv[2], browser=sys.argv[3])
     tkinter.mainloop()
-    # import sys
-    # if len(sys.argv) < 2:
-    #     start_time = time.time()
-    #     load(URL())
-    #     first_time = time.time()
-    #     load(URL())
-    #     cached_time = time.time()
-
-    # elif len(sys.argv) == 2:
-    #     start_time = time.time()
-    #     load(URL(sys.argv[1]))
-    #     first_time = time.time()
-    #     load(URL(sys.argv[1]))
-    #     cached_time = time.time()
-
-
-    # else:
-    #     load(URL(sys.argv[1]), sys.argv[2], sys.argv[3])
-    #     load(URL(sys.argv[1]))
-        
-    # print("Normal time: ", first_time - start_time)
-    # print("Cached time: ", cached_time - first_time)

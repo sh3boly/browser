@@ -55,10 +55,10 @@ class URL:
         # Step 3: Decompress GZIP
         with gzip.GzipFile(fileobj=io.BytesIO(chunk_data)) as gz:
             return gz.read()
-    def request(self, httpVersion = "", browser = ""):
+    def request(self, httpVersion = "1.1", browser = ""):
         return self.cache.memoize(self.request_helper, httpVersion, browser, self.fullUrl)
     
-    def request_helper(self, httpVersion = "", browser = "", fullUrl = ""):
+    def request_helper(self, httpVersion = "1.1", browser = "", fullUrl = ""):
         match self.scheme:
             case "data":
                 return self.content, self.view_source, ""

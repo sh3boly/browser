@@ -1,9 +1,9 @@
-HSTEP, VSTEP = 13, 18
+HSTEP, VSTEP = 13, 28
 LINEBREAK = 26
 import tkinter
 import tkinter.font
 from Text import Text
-from Tag import Tag
+from Element import Element
 FONTS = {}
 def get_font(size, weight, style):
     key = (size, weight, style)
@@ -27,9 +27,20 @@ class Layout:
         self.size = 12
         self.weight = "normal"
         self.style = "roman"
-        for tok in tokens:
-            self.token(tok)
+        self.recurse(tokens)
         self.flush()
+
+    def open_tag(self, tag):
+        if tag == "i":
+            self.style = "italic"
+        elif tag == "b":
+            self.weight = "bold"
+        elif tag == "small":
+            self.size -= 2
+        elif tag == "big":
+            self.size += 4
+        elif tag == "br":
+            self.flush()
     
     def word(self, word):
         font = get_font(self.size, self.weight, self.style)
@@ -42,33 +53,20 @@ class Layout:
             return
         self.line.append((self.cursor_x, word, font))
         self.cursor_x += w + font.measure(" ")
-        
 
-    def token(self, tok):
-        if isinstance(tok, Text):
-            for word in tok.text.split():
-                self.word(word)
-        elif tok.tag == "i":
-            self.style = "italic"
-        elif tok.tag == "/i":
+    def close_tag(self, tag):
+        if tag == "/i":
             self.style = "roman"
-        elif tok.tag == "b":
-            self.weight = "bold"
-        elif tok.tag == "/b":
+        elif tag == "/b":
             self.weight = "normal"
-        elif tok.tag == "small":
-                self.size -= 2
-        elif tok.tag == "/small":
+        elif tag == "/small":
             self.size += 2
-        elif tok.tag == "big":
-            self.size += 4
-        elif tok.tag == "/big":
+        elif tag == "/big":
             self.size -= 4
-        elif tok.tag == "br":
-            self.flush()
-        elif tok.tag == "/p":
+        elif tag == "/p":
             self.flush()
             self.cursor_y += VSTEP
+    
     def flush(self):
         if not self.line: return
         metrics = [font.metrics() for x, word, font in self.line]
@@ -81,3 +79,13 @@ class Layout:
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = HSTEP
         self.line = []
+    
+    def recurse(self, tree):
+        if isinstance(tree, Text):
+            for word in tree.text.split():
+                self.word(word)
+        else:
+            self.open_tag(tree.tag)
+            for child in tree.children:
+                self.recurse(child)
+            self.close_tag(tree.tag)
