@@ -18,6 +18,7 @@ class Browser:
             width=WIDTH,
             height=HEIGHT
         )
+        
         self.canvas.pack(fill='both', expand=1)
         self.scrollbar = ScrollBar(WIDTH, HEIGHT, self.canvas)
         self.scroll = 0
@@ -32,7 +33,7 @@ class Browser:
         global HEIGHT, WIDTH
         HEIGHT = e.height
         WIDTH = e.width
-        self.display_list = Layout(self.tokens, WIDTH).display_list
+        self.display_list = Layout(self.nodes, WIDTH).display_list        
         self.draw()
 
     def mousewheel(self, e):
@@ -76,7 +77,6 @@ class Browser:
 
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
-        
         self.nodes = HTMLParser(body, view_source).parse()
         self.display_list = Layout(self.nodes, WIDTH).display_list
         self.draw()

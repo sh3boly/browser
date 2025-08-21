@@ -43,7 +43,6 @@ class HTMLParser:
 
     def add_tag(self, tag):
         tag, attributes = self.get_attributes(tag)
-        print(attributes)
         if tag.startswith("1"): return
         self.implicit_tags(tag)
         if tag.startswith("/"):
@@ -89,7 +88,6 @@ class HTMLParser:
         if self.view_source:
             text = self.body
             return text
-        print(self.body)
         while i < len(self.body):
             c = self.body[i]
             if self.body[i:i+4] == "&lt;":

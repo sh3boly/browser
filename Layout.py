@@ -1,4 +1,4 @@
-HSTEP, VSTEP = 13, 28
+HSTEP, VSTEP = 13, 18
 LINEBREAK = 26
 import tkinter
 import tkinter.font
