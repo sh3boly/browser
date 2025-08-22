@@ -12,7 +12,8 @@ class ScrollBar:
     
     def update(self, canvas: Canvas, y_end, y_screen_end, screen_height, screen_width):
         canvas.delete("scrollbar")
-        
+        if y_end < y_screen_end:
+            return
         relative_height = min(screen_height - 2 * PADDING, (y_screen_end / y_end) * screen_height)
         
         self.y1 = relative_height + PADDING
