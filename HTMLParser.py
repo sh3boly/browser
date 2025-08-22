@@ -89,8 +89,13 @@ class HTMLParser:
             text = self.body
             return text
         while i < len(self.body):
-            c = self.body[i]
-            if self.body[i:i+4] == "&lt;":
+            c = self.body[i] 
+            if self.body[i:i + 4] == "<!--":
+                i += 4
+                while self.body[i: i+3] != "-->":
+                    i += 1
+                i += 2
+            elif self.body[i:i+4] == "&lt;":
                 text += "<"
                 i += 3
             elif self.body[i:i+4] == "&gt;":
@@ -104,9 +109,8 @@ class HTMLParser:
                 in_tag = False
                 self.add_tag(text)
                 text = ""
+            
             else:
-                if text == "Chris Harrelso":
-                    print("Test")
                 text += c
             i += 1
         if not in_tag and text:

@@ -8,7 +8,6 @@ class ScrollBar:
         self.y0 = screen_height + PADDING
         self.x1 = screen_width - PADDING
         self.y1 = screen_height + SCROLLBAR_HEIGHT + PADDING
-        print("HERE")
         canvas.create_rectangle(self.x0, self.y0, self.x1, self.y1, tags="scrollbar")
     
     def update(self, canvas: Canvas, y_end, y_screen_end, screen_height, screen_width):

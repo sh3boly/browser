@@ -43,16 +43,13 @@ class URL:
             self.host, port = self.host.split(":", 1)
             self.port = int(port)
     def parse_and_decompress_chunked_gzip(self, data: bytes) -> bytes:
-        # Step 1: Find chunk size
         header_end = data.find(b'\r\n')
         chunk_size_hex = data[:header_end]
         chunk_size = int(chunk_size_hex, 16)
 
-        # Step 2: Extract the chunk
         chunk_data_start = header_end + 2
         chunk_data = data[chunk_data_start:chunk_data_start + chunk_size]
 
-        # Step 3: Decompress GZIP
         with gzip.GzipFile(fileobj=io.BytesIO(chunk_data)) as gz:
             return gz.read()
     def request(self, httpVersion = "1.1", browser = ""):
