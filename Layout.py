@@ -16,10 +16,26 @@ def get_font(size, weight, style):
          label = tkinter.Label(font=font)
          FONTS[key] = (font, label)
     return FONTS[key][0]
-         
-class Layout:
-    def __init__(self, tokens, width):
+
+class DocumentLayout:
+    def __init__(self, node, width):
         self.width = width
+        self.node = node
+        self.parent = None
+        self.children = []
+    def layout(self):
+        child = BlockLayout(self.node, self, None, self.width)
+        self.children.append(child)
+        child.layout()
+        self.display_list = child.display_list
+class BlockLayout:
+    def __init__(self, node, parent, previous, width):
+        self.width = width
+        self.node = node
+        self.parent = parent
+        self.previous = previous
+        self.children = []
+    def layout(self):
         self.display_list = []
         self.cursor_x = HSTEP
         self.cursor_y = VSTEP
@@ -27,7 +43,7 @@ class Layout:
         self.size = 12
         self.weight = "normal"
         self.style = "roman"
-        self.recurse(tokens)
+        self.recurse(self.node)
         self.flush()
 
     def open_tag(self, tag):

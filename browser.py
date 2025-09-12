@@ -2,7 +2,7 @@ from URL import URL
 from Text import Text
 from Element import Element
 from scrollbar import ScrollBar
-from Layout import Layout
+from Layout import BlockLayout, DocumentLayout
 import time
 import tkinter
 from HTMLParser import HTMLParser
@@ -33,7 +33,9 @@ class Browser:
         global HEIGHT, WIDTH
         HEIGHT = e.height
         WIDTH = e.width
-        self.display_list = Layout(self.nodes, WIDTH).display_list        
+        self.document = DocumentLayout(self.nodes, WIDTH)
+        self.document.layout()
+        self.display_list = self.document.display_list 
         self.draw()
 
     def mousewheel(self, e):
@@ -78,7 +80,9 @@ class Browser:
     def load(self, url, httpVersion = "1.1", browser = "Chrome"):
         body, view_source, _ = url.request(httpVersion, browser)
         self.nodes = HTMLParser(body, view_source).parse()
-        self.display_list = Layout(self.nodes, WIDTH).display_list
+        self.document = DocumentLayout(self.nodes, WIDTH)
+        self.document.layout()
+        self.display_list = self.document.display_list
         self.draw()
             
 
