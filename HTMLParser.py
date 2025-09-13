@@ -43,7 +43,7 @@ class HTMLParser:
 
     def add_tag(self, tag):
         tag, attributes = self.get_attributes(tag)
-        if tag.startswith("1"): return
+        if tag.startswith("!"): return
         self.implicit_tags(tag)
         if tag.startswith("/"):
             if len(self.unfinished) == 1: return
