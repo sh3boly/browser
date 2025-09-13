@@ -1,9 +1,13 @@
 HSTEP, VSTEP = 13, 18
 LINEBREAK = 26
+from DrawRect import DrawRect
+from DrawText import DrawText
 from Text import Text
 from Element import Element
 import tkinter
 import tkinter.font
+from CSSParser import CSSParser
+
 def get_font(size, weight, style):
     key = (size, weight, style)
     if key not in FONTS:
@@ -15,6 +19,8 @@ def get_font(size, weight, style):
          label = tkinter.Label(font=font)
          FONTS[key] = (font, label)
     return FONTS[key][0]
+
+
 BLOCK_ELEMENTS = [
     "html", "body", "article", "section", "nav", "aside",
     "h1", "h2", "h3", "h4", "h5", "h6", "hgroup", "header",
@@ -75,8 +81,10 @@ class BlockLayout:
             self.y = self.parent.y
         mode = self.layout_mode()
         if mode == "block":
-            self.height = sum([child.height for child in self.children])
             self.layout_intermediate()
+            for child in self.children:
+                child.layout()
+            self.height = sum([child.height for child in self.children])
         else:
             self.display_list = []
             self.cursor_x = 0
@@ -88,8 +96,6 @@ class BlockLayout:
             self.recurse(self.node)
             self.flush()
             self.height = self.cursor_y
-        for child in self.children:
-            child.layout()
 
     def open_tag(self, tag):
         if tag == "i":
@@ -146,7 +152,20 @@ class BlockLayout:
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = 0
         self.line = []
+
     def paint(self):
-        return self.display_list
+        cmds = []
+        if self.layout_mode() == "inline":
+            for x, y, word, font in self.display_list:
+                cmds.append(DrawText(x, y, word, font))
+        bgcolor = self.node.style.get("background-color", "transparent")
+
+        if bgcolor != "transparent":
+            x2, y2 = self.x + self.width, self.y + self.height
+            rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
+            cmds.append(rect)
+        return cmds
+
+        
     
     
