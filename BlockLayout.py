@@ -127,6 +127,11 @@ class BlockLayout:
         elif tag == "p":
             self.flush()
             self.cursor_y += VSTEP
+        elif tag in BLOCK_ELEMENTS:
+            self.flush()
+            self.cursor_y += VSTEP
+
+        
     
     def flush(self):
         if not self.line: return
