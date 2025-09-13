@@ -2,14 +2,18 @@ from URL import URL
 from Text import Text
 from Element import Element
 from scrollbar import ScrollBar
-from Layout import BlockLayout, DocumentLayout
+from DocumentLayout import DocumentLayout
 import time
 import tkinter
 from HTMLParser import HTMLParser
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
 SCROLLSTEP = 100
+def paint_tree(layout_object, display_list):
+    display_list.extend(layout_object.paint())
 
+    for child in layout_object.children:
+        paint_tree(child, display_list)
 class Browser:
     def __init__(self):
         self.window = tkinter.Tk()
@@ -35,7 +39,8 @@ class Browser:
         WIDTH = e.width
         self.document = DocumentLayout(self.nodes, WIDTH)
         self.document.layout()
-        self.display_list = self.document.display_list 
+        self.display_list = []
+        paint_tree(self.document, self.display_list)
         self.draw()
 
     def mousewheel(self, e):
@@ -82,7 +87,8 @@ class Browser:
         self.nodes = HTMLParser(body, view_source).parse()
         self.document = DocumentLayout(self.nodes, WIDTH)
         self.document.layout()
-        self.display_list = self.document.display_list
+        self.display_list = []
+        paint_tree(self.document, self.display_list)
         self.draw()
             
 
