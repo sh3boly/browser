@@ -7,7 +7,10 @@ A lightweight web browser implementation written in Python using Tkinter for the
 ## Features
 
 - **HTML Parsing**: Custom HTML parser that builds a DOM tree from HTML content
-- **Layout Engine**: Text rendering with support for different font sizes, weights, and styles
+- **CSS Parsing**: Parses basic CSS rules and selectors (class, tag, descendant)
+- **Block Layout Engine**: Supports block-level layout, text rendering, and basic box model
+- **Selectors**: Tag and descendant selectors for applying CSS rules
+- **Drawing Primitives**: Renders rectangles and text using a display list
 - **HTTP/HTTPS Support**: Full support for HTTP and HTTPS protocols with SSL/TLS
 - **Caching System**: Built-in browser cache with cache-control header support
 - **Scrolling**: Mouse wheel and keyboard scrolling support
@@ -18,18 +21,25 @@ A lightweight web browser implementation written in Python using Tkinter for the
 
 ## Project Structure
 
+browser/
+
 ```
 browser/
 ├── browser.py          # Main browser class and GUI
-├── URL.py             # URL handling and HTTP requests
-├── HTMLParser.py      # HTML parsing and DOM tree construction
-├── Layout.py          # Text layout and rendering engine
-├── Element.py         # HTML element representation
-├── Text.py            # Text node representation
-├── BrowserCache.py    # Caching system implementation
-├── scrollbar.py       # Scrollbar widget
-├── test.html          # Sample HTML file for testing
-└── testing/           # Test files directory
+├── URL.py              # URL handling and HTTP requests
+├── HTMLParser.py       # HTML parsing and DOM tree construction
+├── CSSParser.py        # CSS parsing and rule extraction
+├── BlockLayout.py      # Block-level layout engine
+├── DocumentLayout.py   # Document-level layout and painting
+├── DrawRect.py         # Rectangle drawing primitive
+├── DrawText.py         # Text drawing primitive
+├── TagSelector.py      # CSS selector logic
+├── Element.py          # HTML element representation
+├── Text.py             # Text node representation
+├── BrowserCache.py     # Caching system implementation
+├── scrollbar.py        # Scrollbar widget
+├── test.html           # Sample HTML file for testing
+└── testing/            # Test files directory
 ```
 
 ## Requirements
@@ -113,12 +123,22 @@ python browser.py file://path/to/your/file.html
    - Builds DOM tree structure
    - Handles self-closing and head tags
 
-4. **Layout Engine** (`Layout.py`)
-   - Text positioning and wrapping
-   - Font management
-   - Display list generation
+4. **CSS Parser** (`CSSParser.py`)
+   - Parses CSS rules and selectors
+   - Supports tag, class, and descendant selectors
 
-5. **Cache System** (`BrowserCache.py`)
+5. **Block Layout Engine** (`BlockLayout.py`, `DocumentLayout.py`)
+   - Block-level layout and box model
+   - Text positioning, wrapping, and font management
+   - Display list generation for painting
+
+6. **Drawing Primitives** (`DrawRect.py`, `DrawText.py`)
+   - Renders rectangles and text to the screen
+
+7. **Selectors** (`TagSelector.py`)
+   - Implements tag and descendant selector logic for CSS
+
+8. **Cache System** (`BrowserCache.py`)
    - Singleton cache implementation
    - Cache-Control header support
    - TTL-based expiration
@@ -140,26 +160,32 @@ python browser.py file://path/to/your/file.html
 - Redirect following (with loop protection)
 - Custom User-Agent strings
 
-### Rendering
-- Text-only rendering (no images or CSS styling)
-- Font size and weight support
+
+### CSS & Rendering
+- Block-level layout (no inline or flex/grid yet)
+- Basic CSS parsing and application (tag, descendant selectors)
+- Font size, weight, and style support
+- Rectangle and text drawing
 - Line wrapping
 - Scrollable content
 - Responsive layout on window resize
 
 ## Limitations
 
-- Text-only rendering (no images, CSS, or JavaScript)
-- Basic HTML support (no complex layouts)
+- No image, video, or JavaScript support
+- CSS support is basic: only block-level, no inline/flex/grid, limited selectors
 - No form handling
 - No link clicking functionality
-- Limited CSS support
+- No advanced layout (floats, positioning, etc.)
+
 
 ## Development
 
 This browser is implemented following the educational approach from [Web Browser Engineering](https://browser.engineering/), serving as a learning project that demonstrates:
 - HTTP protocol implementation
 - HTML parsing techniques
+- CSS parsing and selector logic
+- Block-level layout and rendering
 - GUI programming with Tkinter
 - Caching strategies
 - Text layout algorithms
