@@ -52,6 +52,22 @@ class URL:
 
         with gzip.GzipFile(fileobj=io.BytesIO(chunk_data)) as gz:
             return gz.read()
+    
+    def resolve(self, url):
+        if "://" in url: return URL(url)
+        if not url.startswith("/"):
+            dir, _ = self.path.rsplit("/", 1)
+            while url.startswith("../"):
+                _, url = url.split("/", 1)
+                if "/" in dir:
+                    dir, _ = dir.rsplit("/", 1)
+            url = dir + "/" + url
+        if url.startswith("//"):
+            return URL(self.scheme + ":" + url)
+        else:
+            return URL(self.scheme + "://" + self.host + \
+                       ":" + str(self.port) + url)
+
     def request(self, httpVersion = "1.1", browser = ""):
         return self.cache.memoize(self.request_helper, httpVersion, browser, self.fullUrl)
     
@@ -116,8 +132,6 @@ class URL:
             self.count_redirects += 1
             return self.request(httpVersion, browser)
         
-        # assert "transfer-encoding" not in response_headers
-        print(response_headers)
         if "content-encoding" in response_headers:
             if "transfer-encoding" in response_headers:
                 if response_headers["transfer-encoding"] == "chunked":
@@ -127,7 +141,10 @@ class URL:
                 content = response.read()
                 content = gzip.decompress(content)
                 content = content.decode('utf-8')
+        else:
+            content = response.read()
         if "cache-control" in response_headers:
             self.cache_control = response_headers["cache-control"]
+        s.close()
         return content, self.view_source, self.cache_control
 

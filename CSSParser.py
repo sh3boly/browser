@@ -1,7 +1,30 @@
+from TagSelector import TagSelector
+from TagSelector import DescendantSelector
+
 class CSSParser:
     def __init__(self, s):
         self.s = s
         self.i = 0
+
+    def parse(self):
+        rules = []
+        while self.i < len(self.s):
+            try:
+                self.whitespace()
+                selector = self.selector()
+                self.literal("{")
+                self.whitespace()
+                body = self.body()
+                self.literal("}")
+                rules.append((selector, body))
+            except Exception:
+                why = self.ignore_until(["}"])
+                if why == "}":
+                    self.literal("}")
+                    self.whitespace()
+                else:
+                    break
+        return rules
 
     def whitespace(self):
         while self.i < len(self.s) and self.s[self.i].isspace():
@@ -11,7 +34,7 @@ class CSSParser:
         start = self.i
         
         while self.i < len(self.s):
-            if self.s[self.i].isalnum() or self.s[self.i] in "$-.%":
+            if self.s[self.i].isalnum() or self.s[self.i] in "#-.%":
                 self.i += 1
             else:
                 break
@@ -32,19 +55,19 @@ class CSSParser:
         self.literal(":")
         self.whitespace()
         val = self.word()
-        return prop.casefold(), val
+        return prop.casefold(), val.casefold()
     
     def body(self):
         pairs = {}
-        while self.i < len(self.s):
+        while self.i < len(self.s) and self.s[self.i] != "}":
             try:
                 prop, val = self.pair()
                 pairs[prop] = val
                 self.whitespace()
-                self.literal()
+                self.literal(";")
                 self.whitespace()
             except Exception:
-                why = self.ignore_until([";"])
+                why = self.ignore_until([";", "}"])
                 if why == ";":
                     self.literal(";")
                     self.whitespace()
@@ -61,4 +84,13 @@ class CSSParser:
 
         return None
     
+    def selector(self):
+        out = TagSelector(self.word().casefold())
+        self.whitespace()
+        while self.i < len(self.s) and self.s[self.i] != "{":
+            tag = self.word()
+            descendant = TagSelector(tag.casefold())
+            out = DescendantSelector(out, descendant)
+            self.whitespace()
+        return out
     
