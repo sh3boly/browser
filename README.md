@@ -194,7 +194,7 @@ The implementation closely follows the book's progressive approach to building a
 
 ## Testing
 
-Use the included `test.html` file or create your own HTML files in the `testing/` directory to test browser functionality.
+Use the included `test.html` file or or run the browser on a url to test browser functionality.
 
 ## License
 
